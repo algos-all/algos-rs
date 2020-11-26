@@ -1,16 +1,8 @@
-use std::vec::Vec;
-
-pub fn unique<T>(xs: &mut Vec<T>)
-where
-    T: Ord,
-{
-    xs.sort();
-    xs.dedup();
-}
+pub mod unique;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::unique::unique;
 
     #[test]
     fn unique_noop() {
