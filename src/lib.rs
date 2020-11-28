@@ -3,7 +3,6 @@ pub mod unique;
 
 #[cfg(test)]
 mod tests {
-    use crate::binary_search_tree as bst;
     use crate::unique::unique;
 
     #[test]
@@ -34,12 +33,5 @@ mod tests {
         unique(&mut xs);
 
         assert_eq!(xs, ys);
-    }
-
-    #[test]
-    fn bst_new() {
-        let tree = bst::BinarySearchTree::new(42, 42);
-
-        assert_eq!(tree.root.is_some(), true);
     }
 }
