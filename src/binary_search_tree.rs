@@ -22,7 +22,7 @@ where
 
     pub fn find_node_with_parent(
         &self,
-        key: K,
+        key: &K,
     ) -> (NodeRef<K, V>, NodeRef<K, V>) {
         let mut node = match &self.root {
             Some(rc) => Some(Rc::clone(rc)),
@@ -34,13 +34,13 @@ where
         while let Some(rc) = node {
             let cell = (*rc).borrow();
 
-            if key == cell.key {
+            if *key == cell.key {
                 return (parent, Some(Rc::clone(&rc)));
             }
 
             parent = Some(Rc::clone(&rc));
 
-            node = if key < cell.key {
+            node = if *key < cell.key {
                 match &cell.lft {
                     Some(lft) => Some(Rc::clone(lft)),
                     None => None,
@@ -56,10 +56,21 @@ where
         (parent, node)
     }
 
-    pub fn find(&self, key: K) -> NodeRef<K, V> {
+    pub fn find(&self, key: &K) -> NodeRef<K, V> {
         let (_, node) = self.find_node_with_parent(key);
 
         node
+    }
+
+    pub fn push(&mut self, key: K, val: V) {
+        let (parent, node) = self.find_node_with_parent(&key);
+
+        match (parent, node) {
+            (None, None) => {
+                self.root = Some(Rc::new(RefCell::new(Node::new(key, val))))
+            }
+            _ => panic!("oh no!"),
+        }
     }
 }
 
@@ -99,7 +110,7 @@ mod tests {
     fn bst_find_node_with_parent_one() {
         let tree = bst::Tree::new(42, 42);
 
-        let (parent, node) = tree.find_node_with_parent(42);
+        let (parent, node) = tree.find_node_with_parent(&42);
 
         assert_eq!(parent, None);
         assert_eq!(node.is_some(), true);
@@ -113,7 +124,7 @@ mod tests {
         tree.root.as_ref().unwrap().borrow_mut().rgt =
             Some(Rc::new(RefCell::new(bst::Node::new(43, 43))));
 
-        let (parent, node) = tree.find_node_with_parent(43);
+        let (parent, node) = tree.find_node_with_parent(&43);
 
         assert_eq!(parent.is_some(), true);
         assert_eq!(node.is_some(), true);
@@ -126,7 +137,7 @@ mod tests {
     fn bst_find_one() {
         let tree = bst::Tree::new(42, 42);
 
-        let node = tree.find(42);
+        let node = tree.find(&42);
 
         assert_eq!(node.is_some(), true);
         assert_eq!(node.unwrap().borrow().val, 42)
@@ -136,7 +147,7 @@ mod tests {
     fn bst_find_none() {
         let tree = bst::Tree::new(42, 42);
 
-        let node = tree.find(43);
+        let node = tree.find(&43);
 
         assert_eq!(node, None);
     }
