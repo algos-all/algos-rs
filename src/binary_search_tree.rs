@@ -55,6 +55,12 @@ where
 
         (parent, node)
     }
+
+    pub fn find(&self, key: K) -> NodeRef<K, V> {
+        let (_, node) = self.find_node_with_parent(key);
+
+        node
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -114,5 +120,24 @@ mod tests {
 
         assert_eq!(parent.unwrap().borrow().val, 42);
         assert_eq!(node.unwrap().borrow().val, 43);
+    }
+
+    #[test]
+    fn bst_find_one() {
+        let tree = bst::Tree::new(42, 42);
+
+        let node = tree.find(42);
+
+        assert_eq!(node.is_some(), true);
+        assert_eq!(node.unwrap().borrow().val, 42)
+    }
+
+    #[test]
+    fn bst_find_none() {
+        let tree = bst::Tree::new(42, 42);
+
+        let node = tree.find(43);
+
+        assert_eq!(node, None);
     }
 }
