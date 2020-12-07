@@ -20,6 +20,10 @@ where
         }
     }
 
+    pub fn empty() -> Self {
+        Tree { root: None }
+    }
+
     pub fn find_node_with_parent(
         &self,
         key: &K,
@@ -69,7 +73,19 @@ where
             (None, None) => {
                 self.root = Some(Rc::new(RefCell::new(Node::new(key, val))))
             }
-            _ => panic!("oh no!"),
+            (Some(rc), None) => {
+                let mut cell = rc.borrow_mut();
+                if key < cell.key {
+                    cell.lft =
+                        Some(Rc::new(RefCell::new(Node::new(key, val))));
+                } else {
+                    cell.rgt =
+                        Some(Rc::new(RefCell::new(Node::new(key, val))));
+                }
+            }
+            (_, Some(rc)) => {
+                rc.borrow_mut().val = val;
+            }
         }
     }
 }
@@ -150,5 +166,45 @@ mod tests {
         let node = tree.find(&43);
 
         assert_eq!(node, None);
+    }
+
+    #[test]
+    fn bst_push_one() {
+        let mut tree = bst::Tree::<i32, i32>::empty();
+
+        tree.push(42, 42);
+
+        assert_eq!(tree.root.is_some(), true);
+        assert_eq!(tree.root.as_ref().unwrap().borrow().key, 42);
+        assert_eq!(tree.root.as_ref().unwrap().borrow().val, 42);
+    }
+
+    #[test]
+    fn bst_push_two() {
+        let mut tree = bst::Tree::<i32, i32>::empty();
+
+        tree.push(42, 42);
+        tree.push(43, 43);
+        tree.push(13, 13);
+
+        let (parent13, node13) = tree.find_node_with_parent(&13);
+
+        assert_eq!(parent13.is_some(), true);
+        assert_eq!(parent13.as_ref().unwrap().borrow().key, 42);
+        assert_eq!(parent13.as_ref().unwrap().borrow().val, 42);
+
+        assert_eq!(node13.is_some(), true);
+        assert_eq!(node13.as_ref().unwrap().borrow().key, 13);
+        assert_eq!(node13.as_ref().unwrap().borrow().val, 13);
+
+        let (parent43, node43) = tree.find_node_with_parent(&43);
+
+        assert_eq!(parent43.is_some(), true);
+        assert_eq!(parent43.as_ref().unwrap().borrow().key, 42);
+        assert_eq!(parent43.as_ref().unwrap().borrow().val, 42);
+
+        assert_eq!(node43.is_some(), true);
+        assert_eq!(node43.as_ref().unwrap().borrow().key, 43);
+        assert_eq!(node43.as_ref().unwrap().borrow().val, 43);
     }
 }
