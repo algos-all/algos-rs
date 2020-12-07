@@ -1,7 +1,30 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+#[derive(Debug, PartialEq, Eq)]
+pub struct Node<K, V> {
+    pub key: K,
+    pub val: V,
+    pub lft: NodeRef<K, V>,
+    pub rgt: NodeRef<K, V>,
+}
+
 type NodeRef<K, V> = Option<Rc<RefCell<Node<K, V>>>>;
+
+impl<K, V> Node<K, V> {
+    pub fn new(key: K, val: V) -> Self {
+        Node {
+            key: key,
+            val: val,
+            lft: None,
+            rgt: None,
+        }
+    }
+
+    pub fn to_ref(key: K, val: V) -> NodeRef<K, V> {
+        Some(Rc::new(RefCell::new(Node::new(key, val))))
+    }
+}
 
 pub struct Tree<K, V>
 where
@@ -16,7 +39,7 @@ where
 {
     pub fn new(key: K, val: V) -> Self {
         Tree {
-            root: Some(Rc::new(RefCell::new(Node::new(key, val)))),
+            root: Node::to_ref(key, val),
         }
     }
 
@@ -70,17 +93,13 @@ where
         let (parent, node) = self.find_node_with_parent(&key);
 
         match (parent, node) {
-            (None, None) => {
-                self.root = Some(Rc::new(RefCell::new(Node::new(key, val))))
-            }
+            (None, None) => self.root = Node::to_ref(key, val),
             (Some(rc), None) => {
                 let mut cell = rc.borrow_mut();
                 if key < cell.key {
-                    cell.lft =
-                        Some(Rc::new(RefCell::new(Node::new(key, val))));
+                    cell.lft = Node::to_ref(key, val);
                 } else {
-                    cell.rgt =
-                        Some(Rc::new(RefCell::new(Node::new(key, val))));
+                    cell.rgt = Node::to_ref(key, val);
                 }
             }
             (_, Some(rc)) => {
@@ -88,23 +107,12 @@ where
             }
         }
     }
-}
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct Node<K, V> {
-    pub key: K,
-    pub val: V,
-    pub lft: NodeRef<K, V>,
-    pub rgt: NodeRef<K, V>,
-}
+    pub fn remove(&mut self, key: K, val: V) {
+        let (parent, node) = self.find_node_with_parent(&key);
 
-impl<K, V> Node<K, V> {
-    pub fn new(key: K, val: V) -> Self {
-        Node {
-            key: key,
-            val: val,
-            lft: None,
-            rgt: None,
+        if !node.is_some() {
+            return; // No such key or empty tree
         }
     }
 }
