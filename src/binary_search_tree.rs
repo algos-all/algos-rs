@@ -8,7 +8,9 @@ pub struct BinarySearchTree<K, V> {
 impl<K, V> BinarySearchTree<K, V> {
     pub fn new(key: K, val: V) -> Self {
         BinarySearchTree {
-            root: Some(Rc::new(RefCell::new(BinarySearchNode::new(key, val)))),
+            root: Some(Rc::new(RefCell::new(BinarySearchNode::new(
+                key, val,
+            )))),
         }
     }
 }
@@ -28,5 +30,17 @@ impl<K, V> BinarySearchNode<K, V> {
             lft: None,
             rgt: None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::binary_search_tree as bst;
+
+    #[test]
+    fn bst_new() {
+        let tree = bst::BinarySearchTree::new(42, 42);
+
+        assert_eq!(tree.root.is_some(), true);
     }
 }

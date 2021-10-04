@@ -1,45 +1,96 @@
 pub mod binary_search_tree;
+pub mod linked_list_01;
+pub mod linked_list_02;
 pub mod unique;
 
 #[cfg(test)]
 mod tests {
-    use crate::binary_search_tree as bst;
-    use crate::unique::unique;
+    #[derive(Debug, PartialEq)]
+    struct Element {
+        pub value: i32,
+    }
 
-    #[test]
-    fn unique_noop() {
-        let mut xs = vec![1, 2, 3];
-        let ys = vec![1, 2, 3];
+    impl Element {
+        pub fn new(value: i32) -> Self {
+            Element { value: value }
+        }
+    }
 
-        unique(&mut xs);
+    struct Value {
+        pub value: Option<i32>,
+    }
 
-        assert_eq!(xs, ys);
+    impl Value {
+        pub fn new() -> Self {
+            Value {
+                value: Option::None,
+            }
+        }
+
+        pub fn value(value: i32) -> Self {
+            Value {
+                value: Option::Some(value),
+            }
+        }
     }
 
     #[test]
-    fn unique_simple_0() {
-        let mut xs = vec![0, 0, 0, 0];
-        let ys = vec![0];
+    pub fn vec_00() {
+        let xs = vec![Element::new(42), Element::new(43)];
 
-        unique(&mut xs);
-
-        assert_eq!(xs, ys);
+        assert_eq!(xs[0], Element::new(42));
     }
 
     #[test]
-    fn unique_simple_1() {
-        let mut xs = vec![0, 1, 2, 0, 2, 1];
-        let ys = vec![0, 1, 2];
+    pub fn vec_01() {
+        let mut xs = vec![Element::new(42), Element::new(43)];
 
-        unique(&mut xs);
+        for x in &mut xs {
+            x.value = x.value + 1;
+        }
 
-        assert_eq!(xs, ys);
+        assert_eq!(xs.len(), 2);
+        assert_eq!(xs[1], Element::new(44));
     }
 
     #[test]
-    fn bst_new() {
-        let tree = bst::BinarySearchTree::new(42, 42);
+    pub fn vec_02() {
+        let mut xs = vec![Element::new(42), Element::new(43)];
 
-        assert_eq!(tree.root.is_some(), true);
+        for x in xs.iter_mut() {
+            x.value = x.value + 1
+        }
+
+        assert_eq!(xs.len(), 2);
+        assert_eq!(xs[1], Element::new(44));
+    }
+
+    #[test]
+    pub fn opt_00() {
+        let value = Value::new();
+
+        assert_eq!(value.value, Option::None);
+    }
+
+    #[test]
+    pub fn opt_01() {
+        let xs = vec![Value::value(42), Value::value(43)];
+
+        assert_eq!(xs[0].value, Option::Some(42));
+    }
+
+    #[test]
+    pub fn opt_02() {
+        let mut xs = vec![Value::value(42), Value::new(), Value::value(43)];
+
+        for x in &mut xs {
+            x.value = match x.value {
+                Option::None => Option::Some(44),
+                Option::Some(a) => Option::Some(a),
+            }
+        }
+
+        assert_eq!(xs[0].value, Option::Some(42));
+        assert_eq!(xs[1].value, Option::Some(44));
     }
 }
