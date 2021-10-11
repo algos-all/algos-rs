@@ -5,6 +5,8 @@ pub mod unique;
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     #[derive(Debug, PartialEq)]
     struct Element {
         pub value: i32,
@@ -92,5 +94,22 @@ mod tests {
 
         assert_eq!(xs[0].value, Option::Some(42));
         assert_eq!(xs[1].value, Option::Some(44));
+    }
+
+    #[test]
+    pub fn hash_map_00() {
+        let mut xs: HashMap<i32, String> = HashMap::new();
+
+        xs.insert(1, String::from("hello"));
+        xs.insert(2, String::from("world"));
+
+        for entry in xs {
+            if entry.0 == 1 {
+                assert_eq!("hello", entry.1);
+            }
+            if entry.0 == 2 {
+                assert_eq!("world", entry.1);
+            }
+        }
     }
 }
