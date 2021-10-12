@@ -174,4 +174,25 @@ mod tests {
         assert_eq!(it.next(), Some(1));
         assert_eq!(it.next(), None);
     }
+
+    #[test]
+    fn list_iter_01() {
+        let mut xs = List::new();
+
+        xs.push(1);
+        xs.push(2);
+        xs.push(3);
+
+        let mut it = xs.iter();
+        assert_eq!(it.next(), Some(&3));
+        assert_eq!(it.next(), Some(&2));
+        assert_eq!(it.next(), Some(&1));
+        assert_eq!(it.next(), None);
+
+        let mut it = xs.iter();
+        assert_eq!(it.next(), Some(&3));
+        assert_eq!(it.next(), Some(&2));
+        assert_eq!(it.next(), Some(&1));
+        assert_eq!(it.next(), None);
+    }
 }
