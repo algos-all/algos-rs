@@ -92,6 +92,27 @@ impl<'a, T> Iterator for Iter<'a, T> {
     }
 }
 
+pub struct IterMut<'a, T> {
+    node: Option<&'a mut Node<T>>,
+}
+
+impl<T> List<T> {
+    pub fn iter_mut(&mut self) -> IterMut<T> {
+        IterMut { node: self.head.as_deref_mut() }
+    }
+}
+
+impl<'a, T> Iterator for IterMut<'a, T> {
+    type Item = &'a mut T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.node.take().map(|node| {
+            self.node = node.next.as_deref_mut();
+            &mut node.elem
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Link;
@@ -193,6 +214,21 @@ mod tests {
         assert_eq!(it.next(), Some(&3));
         assert_eq!(it.next(), Some(&2));
         assert_eq!(it.next(), Some(&1));
+        assert_eq!(it.next(), None);
+    }
+
+    #[test]
+    fn list_iter_02() {
+        let mut xs = List::new();
+
+        xs.push(1);
+        xs.push(2);
+        xs.push(3);
+
+        let mut it = xs.iter_mut();
+        assert_eq!(it.next(), Some(&mut 3));
+        assert_eq!(it.next(), Some(&mut 2));
+        assert_eq!(it.next(), Some(&mut 1));
         assert_eq!(it.next(), None);
     }
 }
