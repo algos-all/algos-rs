@@ -1,6 +1,7 @@
 pub mod binary_search_tree;
 pub mod linked_list_01;
 pub mod linked_list_02;
+pub mod quick_sort;
 pub mod unique;
 
 #[cfg(test)]
