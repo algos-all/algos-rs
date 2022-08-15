@@ -1,101 +1,132 @@
-use rand::seq::SliceRandom;
+use rand::Rng;
 
 pub trait SortAlgorithm {
-    fn sort<const N: usize>(xs: [i32; N]) -> [i32; N];
+    fn sort(xs: &mut [i32]);
 }
 
-struct QuickSort;
+pub struct QuickSort;
 
 impl QuickSort {
-    fn sort<const N: usize>(
-        mut xs: [i32; N],
-        lft: usize,
-        rgt: usize,
-    ) -> [i32; N] {
-        if (lft == rgt) || (lft + 1 == rgt) {
-            return xs;
+    fn sort(xs: &mut [i32], lft: usize, rgt: usize) {
+        if lft >= rgt {
+            return;
         }
 
-        let mut i = lft;
-        let mut j = rgt;
+        let (mut i, mut j) = (lft, rgt);
+        let (mut overflow_add, mut overflow_sub) = (false, false);
+        // TODO: initialize random number generator less often:
         let mut rng = rand::thread_rng();
-        while i < j {
-            let pivot = *xs[i..j].choose(&mut rng).unwrap();
+        let pivot = xs[rng.gen_range(lft..rgt)];
+        // let pivot = xs[i + (j - i) / 2];
 
-            while i < j && xs[i] <= pivot {
-                i += 1;
+        while !(overflow_add || overflow_sub) && i < j {
+            while !overflow_add && xs[i] < pivot {
+                (i, overflow_add) = i.overflowing_add(1);
             }
-            while i < j && xs[j - 1] >= pivot {
-                j -= 1;
-            }
-
-            if i < j {
-                (xs[i], xs[j - 1]) = (xs[j - 1], xs[i])
+            while !overflow_sub && xs[j] > pivot {
+                (j, overflow_sub) = j.overflowing_sub(1);
             }
 
-            Self::sort(xs, lft, i);
-            Self::sort(xs, j, rgt);
+            if !(overflow_add || overflow_sub) && i <= j {
+                xs.swap(i, j);
+                (i, overflow_add) = i.overflowing_add(1);
+                (j, overflow_sub) = j.overflowing_sub(1);
+            }
         }
 
-        xs
+        if !overflow_sub {
+            Self::sort(xs, lft, j);
+        }
+        if !overflow_add {
+            Self::sort(xs, i, rgt);
+        }
     }
 }
 
 impl SortAlgorithm for QuickSort {
-    fn sort<const N: usize>(xs: [i32; N]) -> [i32; N] {
-        Self::sort(xs, 0, xs.len())
+    fn sort(xs: &mut [i32]) {
+        if xs.is_empty() {
+            return;
+        }
+
+        Self::sort(xs, 0, xs.len() - 1)
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use quickcheck_macros::quickcheck;
 
     #[test]
     fn test_quick_sort_0() {
-        let xs = [];
-        let ys = <QuickSort as SortAlgorithm>::sort(xs);
+        let mut xs = [];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
 
-        assert_eq!(ys, []);
+        assert_eq!(xs, []);
     }
 
     #[test]
     fn test_quick_sort_1() {
-        let xs = [42];
-        let ys = <QuickSort as SortAlgorithm>::sort(xs);
+        let mut xs = vec![42];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
 
-        assert_eq!(ys, [42]);
+        assert_eq!(xs, [42]);
     }
 
     #[test]
     fn test_quick_sort_2_0() {
-        let xs = [0, 1];
-        let ys = <QuickSort as SortAlgorithm>::sort(xs);
+        let mut xs = vec![0, 1];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
 
-        assert_eq!(ys, [0, 1]);
+        assert_eq!(xs, [0, 1]);
     }
 
     #[test]
     fn test_quick_sort_2_1() {
-        let xs = [1, 0];
-        let ys = <QuickSort as SortAlgorithm>::sort(xs);
+        let mut xs = vec![1, 0];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
 
-        assert_eq!(ys, [0, 1]);
+        assert_eq!(xs, [0, 1]);
+    }
+
+    #[test]
+    fn test_quick_sort_2_2() {
+        let mut xs = vec![2, 2];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
+
+        assert_eq!(xs, [2, 2]);
     }
 
     #[test]
     fn test_quick_sort_4_0() {
-        let xs = [1, 2, 3, 4];
-        let ys = <QuickSort as SortAlgorithm>::sort(xs);
+        let mut xs = vec![1, 2, 3, 4];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
 
-        assert_eq!(ys, [1, 2, 3, 4]);
+        assert_eq!(xs, [1, 2, 3, 4]);
     }
 
     #[test]
     fn test_quick_sort_4_1() {
-        let xs = [1, 3, 2, 4];
-        let ys = <QuickSort as SortAlgorithm>::sort(xs);
+        let mut xs = vec![1, 3, 2, 4];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
 
-        assert_eq!(ys, [1, 2, 3, 4]);
+        assert_eq!(xs, [1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn test_quick_sort_4_2() {
+        let mut xs = vec![1, 4, 2, 3];
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
+
+        assert_eq!(xs, [1, 2, 3, 4]);
+    }
+
+    #[quickcheck]
+    fn test_random_input(mut xs: Vec<i32>) -> bool {
+        let mut ys = xs.clone();
+        ys.sort_unstable();
+        <QuickSort as SortAlgorithm>::sort(&mut xs);
+        ys == xs
     }
 }
