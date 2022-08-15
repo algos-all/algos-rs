@@ -1,13 +1,13 @@
 use rand::Rng;
 
 pub trait SortAlgorithm {
-    fn sort(xs: &mut [i32]);
+    fn sort<T: PartialOrd + Clone>(xs: &mut [T]);
 }
 
 pub struct QuickSort;
 
 impl QuickSort {
-    fn sort(xs: &mut [i32], lft: usize, rgt: usize) {
+    fn sort<T: PartialOrd + Clone>(xs: &mut [T], lft: usize, rgt: usize) {
         if lft >= rgt {
             return;
         }
@@ -16,8 +16,7 @@ impl QuickSort {
         let (mut overflow_add, mut overflow_sub) = (false, false);
         // TODO: initialize random number generator less often:
         let mut rng = rand::thread_rng();
-        let pivot = xs[rng.gen_range(lft..rgt)];
-        // let pivot = xs[i + (j - i) / 2];
+        let pivot = xs[rng.gen_range(lft..rgt)].clone();
 
         while !(overflow_add || overflow_sub) && i < j {
             while !overflow_add && xs[i] < pivot {
@@ -44,7 +43,7 @@ impl QuickSort {
 }
 
 impl SortAlgorithm for QuickSort {
-    fn sort(xs: &mut [i32]) {
+    fn sort<T: PartialOrd + Clone>(xs: &mut [T]) {
         if xs.is_empty() {
             return;
         }
@@ -60,7 +59,7 @@ mod tests {
 
     #[test]
     fn test_quick_sort_0() {
-        let mut xs = [];
+        let mut xs: Vec<i32> = vec![];
         <QuickSort as SortAlgorithm>::sort(&mut xs);
 
         assert_eq!(xs, []);
