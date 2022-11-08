@@ -3,6 +3,7 @@ pub mod linked_list_01;
 pub mod linked_list_02;
 pub mod quick_sort;
 pub mod unique;
+pub mod xp_array;
 
 #[cfg(test)]
 mod tests {
