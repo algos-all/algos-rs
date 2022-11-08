@@ -24,9 +24,7 @@ impl List01 {
 
     pub fn pop(&mut self) -> Option<i32> {
         match mem::replace(&mut self.head, Link::None) {
-            Link::None => {
-                Option::None
-            }
+            Link::None => Option::None,
             Link::Node(node) => {
                 self.head = node.next;
                 Option::Some(node.elem)
@@ -46,9 +44,9 @@ impl List01 {
 
 #[cfg(test)]
 mod tests {
-    use super::Node;
     use super::Link;
     use super::List01;
+    use super::Node;
 
     #[test]
     fn list_new_00() {
